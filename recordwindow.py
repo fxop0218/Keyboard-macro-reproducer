@@ -50,11 +50,16 @@ class Ui_MainWindow(object):
             20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
         )
         self.verticalLayout.addItem(spacerItem3)
+        self.lExitButton = QtWidgets.QLabel(self.widget)
+        self.lExitButton.setObjectName("lExitButton")
+        self.verticalLayout.addWidget(self.lExitButton)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
+
         self.bStartRecord = QtWidgets.QPushButton(self.widget)
         self.bStartRecord.setObjectName("bStartRecord")
         self.bStartRecord.clicked.connect(startRecord)
+
         self.horizontalLayout.addWidget(self.bStartRecord)
         spacerItem4 = QtWidgets.QSpacerItem(
             40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
@@ -85,10 +90,26 @@ class Ui_MainWindow(object):
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 500, 21))
         self.menubar.setObjectName("menubar")
+        self.menuProfiles = QtWidgets.QMenu(self.menubar)
+        self.menuProfiles.setObjectName("menuProfiles")
+        self.menuCreate_macro = QtWidgets.QMenu(self.menubar)
+        self.menuCreate_macro.setObjectName("menuCreate_macro")
+        self.menuSettings = QtWidgets.QMenu(self.menubar)
+        self.menuSettings.setObjectName("menuSettings")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        self.actionExit = QtWidgets.QAction(MainWindow)
+        self.actionExit.setObjectName("actionExit")
+        self.actionExit_2 = QtWidgets.QAction(MainWindow)
+        self.actionExit_2.setObjectName("actionExit_2")
+        self.menuSettings.addAction(self.actionExit)
+        self.menuSettings.addSeparator()
+        self.menuSettings.addAction(self.actionExit_2)
+        self.menubar.addAction(self.menuProfiles.menuAction())
+        self.menubar.addAction(self.menuCreate_macro.menuAction())
+        self.menubar.addAction(self.menuSettings.menuAction())
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -97,10 +118,18 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.lMacroTitle.setText(_translate("MainWindow", "Macro name"))
+        self.lExitButton.setText(_translate("MainWindow", "Stop recording key: Esc"))
         self.bStartRecord.setText(_translate("MainWindow", "Start recording"))
         self.bStopRecord.setText(_translate("MainWindow", "Stop recording"))
         self.bSaveRecord.setText(_translate("MainWindow", "Save"))
+        self.menuProfiles.setTitle(_translate("MainWindow", "Profiles"))
+        self.menuCreate_macro.setTitle(_translate("MainWindow", "Create macro"))
+        self.menuSettings.setTitle(_translate("MainWindow", "Settings"))
+        self.actionExit.setText(_translate("MainWindow", "Select key to exit"))
+        self.actionExit_2.setText(_translate("MainWindow", "Exit"))
 
+
+# TODO create thread class to use the layaout when the record code is being executed
 
 if __name__ == "__main__":
     import sys

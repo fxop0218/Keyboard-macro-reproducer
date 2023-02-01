@@ -91,6 +91,13 @@
           </spacer>
          </item>
          <item>
+          <widget class="QLabel" name="lExitButton">
+           <property name="text">
+            <string>Stop recording key: Esc</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <layout class="QHBoxLayout" name="horizontalLayout">
            <item>
             <widget class="QPushButton" name="bStartRecord">
@@ -183,8 +190,39 @@
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuProfiles">
+    <property name="title">
+     <string>Profiles</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuCreate_macro">
+    <property name="title">
+     <string>Create macro</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="actionExit"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit_2"/>
+   </widget>
+   <addaction name="menuProfiles"/>
+   <addaction name="menuCreate_macro"/>
+   <addaction name="menuSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionExit">
+   <property name="text">
+    <string>Select key to exit</string>
+   </property>
+  </action>
+  <action name="actionExit_2">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
