@@ -93,8 +93,7 @@ def simulate_key_press(key):
 
 
 def replicate(file_name: str = "key_logger.csv"):
-
-    with open(file_name) as file:
-        keys = pd.read_csv(file)
-        for r in keys:
-            simulate_key_press(r)
+    keys = pd.read_csv(file_name)
+    print(keys.head())
+    for r in keys["0"]:
+        simulate_key_press(r[1])
