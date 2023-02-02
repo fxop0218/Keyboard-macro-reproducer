@@ -10,7 +10,6 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog
-from keyboard_funcions import KeyboardRecorder as kr
 from pynput import keyboard
 import sys
 import csv
@@ -148,9 +147,12 @@ class Ui_MainWindow(QMainWindow):
             self.bStartRecord.setEnabled(True)
 
     def stop_recording(self):
-        self.keyboard_recorder.stop_recording()
-        self.bStartRecord.setEnabled(True)
-        self.bStopRecord.setEnabled(False)
+        try:
+            self.keyboard_recorder.stop_recording()
+            self.bStartRecord.setEnabled(True)
+            self.bStopRecord.setEnabled(False)
+        except Exception as e:
+            print(f"Error stoping: {e}")
 
 
 # TODO create thread class to use the layaout when the record code is being executed
@@ -161,31 +163,36 @@ class KeyboardRecorder:
         self.file_name = file_name
         self.recording = False
         self.thread = None
+        self.keys = []
 
     def start_recording(self):
         self.recording = True
         self.thread = threading.Thread(target=self._record_keyboard)
         self.thread.start()
 
-    def stop_recording(self, keys):
-        self.recording = False
-        self.thread.join()
-        print("Save file")
-        df = pd.DataFrame(keys)
-        df.to_csv(self.file_name, index=False)
+    def stop_recording(self):
+        try:
+            self.recording = False
+            print("Save file")
+            df = pd.DataFrame(self.keys)
+            df.to_csv(self.file_name, index=False)
+            self.thread.join()
+
+        except Exception as e:
+            print(f"Exception stop_recording {e}")
 
     def _record_keyboard(self):
-        keys = []
         with open(self.file_name, "w", newline="") as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(["Timestamp", "Key"])
+            writer.writerow(["Key"])
 
             def on_press(key):
-                keys.append(str(key))
+                self.keys.append(str(key))
                 print(f"Key {key} pressed")
+                # print(self.keys)
 
                 if key == keyboard.Key.esc:
-                    self.stop_recording(keys)
+                    self.stop_recording()
 
             with keyboard.Listener(on_press=on_press) as listener:
                 listener.join()
