@@ -9,10 +9,17 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from keyboard_funcions import startRecord
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog
+from keyboard_funcions import KeyboardRecorder as kr
+from pynput import keyboard
+import sys
+import csv
+import threading
+import datetime
+import pandas as pd
 
 
-class Ui_MainWindow(object):
+class Ui_MainWindow(QMainWindow):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(500, 390)
@@ -58,7 +65,7 @@ class Ui_MainWindow(object):
 
         self.bStartRecord = QtWidgets.QPushButton(self.widget)
         self.bStartRecord.setObjectName("bStartRecord")
-        self.bStartRecord.clicked.connect(startRecord)
+        self.bStartRecord.clicked.connect(self.start_recording)
 
         self.horizontalLayout.addWidget(self.bStartRecord)
         spacerItem4 = QtWidgets.QSpacerItem(
@@ -67,6 +74,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addItem(spacerItem4)
         self.bStopRecord = QtWidgets.QPushButton(self.widget)
         self.bStopRecord.setObjectName("bStopRecord")
+        self.bStopRecord.clicked.connect(self.stop_recording)
         self.horizontalLayout.addWidget(self.bStopRecord)
         spacerItem5 = QtWidgets.QSpacerItem(
             40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
@@ -128,8 +136,106 @@ class Ui_MainWindow(object):
         self.actionExit.setText(_translate("MainWindow", "Select key to exit"))
         self.actionExit_2.setText(_translate("MainWindow", "Exit"))
 
+    def start_recording(self):
+        file_name = self.teNameMacro.text() + ".csv"
+        if file_name:
+            print(f"Print: {file_name}")
+            self.keyboard_recorder = KeyboardRecorder(
+                file_name,
+            )
+            self.keyboard_recorder.start_recording()
+            self.bStartRecord.setEnabled(False)
+            self.bStartRecord.setEnabled(True)
+
+    def stop_recording(self):
+        self.keyboard_recorder.stop_recording()
+        self.bStartRecord.setEnabled(True)
+        self.bStopRecord.setEnabled(False)
+
 
 # TODO create thread class to use the layaout when the record code is being executed
+
+
+class KeyboardRecorder:
+    def __init__(self, file_name):
+        self.file_name = file_name
+        self.recording = False
+        self.thread = None
+
+    def start_recording(self):
+        self.recording = True
+        self.thread = threading.Thread(target=self._record_keyboard)
+        self.thread.start()
+
+    def stop_recording(self, keys):
+        self.recording = False
+        self.thread.join()
+        print("Save file")
+        df = pd.DataFrame(keys)
+        df.to_csv(self.file_name, index=False)
+
+    def _record_keyboard(self):
+        keys = []
+        with open(self.file_name, "w", newline="") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["Timestamp", "Key"])
+
+            def on_press(key):
+                keys.append(str(key))
+                print(f"Key {key} pressed")
+
+                if key == keyboard.Key.esc:
+                    self.stop_recording(keys)
+
+            with keyboard.Listener(on_press=on_press) as listener:
+                listener.join()
+
+
+def simulate_key_press(key):
+    try:
+        print(f"Key pressed: {key}")
+        keyboard.press(key)
+        keyboard.release(key)
+    except AttributeError:
+        print("Special key")
+        special_keys = {
+            "Key.alt_l": keyboard.Key.alt_l,
+            "Key.alt_r": keyboard.Key.alt_r,
+            "Key.backspace": keyboard.Key.backspace,
+            "Key.cmd": keyboard.Key.cmd,
+            "Key.ctrl_l": keyboard.Key.ctrl_l,
+            "Key.ctrl_r": keyboard.Key.ctrl_r,
+            "Key.delete": keyboard.Key.delete,
+            "Key.down": keyboard.Key.down,
+            "Key.end": keyboard.Key.end,
+            "Key.enter": keyboard.Key.enter,
+            "Key.esc": keyboard.Key.esc,
+            "Key.f1": keyboard.Key.f1,
+            "Key.f2": keyboard.Key.f2,
+            "Key.f3": keyboard.Key.f3,
+            "Key.f4": keyboard.Key.f4,
+            "Key.f5": keyboard.Key.f5,
+            "Key.f6": keyboard.Key.f6,
+            "Key.f7": keyboard.Key.f7,
+            "Key.f8": keyboard.Key.f8,
+            "Key.f9": keyboard.Key.f9,
+            "Key.f10": keyboard.Key.f10,
+            "Key.f11": keyboard.Key.f11,
+            "Key.f12": keyboard.Key.f12,
+            "Key.home": keyboard.Key.home,
+            "Key.left": keyboard.Key.left,
+            "Key.page_down": keyboard.Key.page_down,
+            "Key.page_up": keyboard.Key.page_up,
+            "Key.right": keyboard.Key.right,
+            "Key.shift_l": keyboard.Key.shift_l,
+            "Key.shift_r": keyboard.Key.shift_r,
+            "Key.space": keyboard.Key.space,
+            "Key.tab": keyboard.Key.tab,
+            "Key.up": keyboard.Key.up,
+        }
+        keyboard.press(special_keys[key])
+        keyboard.release(special_keys[key])
+
 
 if __name__ == "__main__":
     import sys

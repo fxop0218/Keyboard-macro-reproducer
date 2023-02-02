@@ -1,50 +1,47 @@
-import pynput.keyboard
+import sys
 import csv
-import pandas as pd
-import numpy as np
-import time
-import random
-
-keys = []
-keyboard = pynput.keyboard.Controller()
+import threading
+import datetime
+from pynput import keyboard
 
 
-def save_csv(name: str = "key_logger"):
-    try:
-        name = name + ".csv"
-        print(f"Csv file name: {name}")
-        df = pd.DataFrame(keys)
-        df.to_csv(name, index=False)
-        return True
-    except Exception as e:
-        print(f"Error exporting csv: {e}")
-        return False
+class KeyboardRecorder:
+    def __init__(self, file_name):
+        self.file_name = file_name
+        self.recording = False
+        self.thread = None
 
+    def start_recording(self):
+        self.recording = True
+        self.thread = threading.Thread(target=self._record_keyboard)
+        self.thread.start()
 
-def on_press(key):
-    keys.append(str(key))
-    print(f"Key {key} pressed")
+    def stop_recording(self):
+        self.recording = False
+        self.thread.join()
 
-
-def on_release(key):
-    print(f"Key {key} released")
-    if str(key) == "Key.esc":
-        # Save in csv
-        save_csv("key_logger")
-        return False
-
-
-def listener_key():
-    with pynput.keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
-        listener.join()
+    def _record_keyboard(self):
+        with open(self.file_name, "w", newline="") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["Timestamp", "Key"])
+            while self.recording:
+                key = keyboard.read_key()
+                try:
+                    writer.writerow([str(datetime.datetime.now()), key.char])
+                except AttributeError:
+                    writer.writerow([str(datetime.datetime.now()), key])
+                if key == keyboard.Key.esc:
+                    self.stop_recording()
+                    break
 
 
 def simulate_key_press(key):
     try:
-        time.sleep(random.randint(0, 2))
+        print(f"Key pressed: {key}")
         keyboard.press(key)
         keyboard.release(key)
     except AttributeError:
+        print("Special key")
         special_keys = {
             "Key.alt_l": keyboard.Key.alt_l,
             "Key.alt_r": keyboard.Key.alt_r,
@@ -96,4 +93,4 @@ def replicate(file_name: str = "key_logger.csv"):
     keys = pd.read_csv(file_name)
     print(keys.head())
     for r in keys["0"]:
-        simulate_key_press(r[1])
+        simulate_key_press(r)
